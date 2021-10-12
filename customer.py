@@ -36,17 +36,15 @@ class Customer:
         fmt = "{:32s}   {:4d} {:6.2f}\n"
 
         for rental in self.rentals:
-            # compute rental change
-            amount = self.amount_for(rental)
             # award renter points
             if rental.get_movie().get_price_code() == Movie.NEW_RELEASE:
                 frequent_renter_points += rental.get_days_rented()
             else:
                 frequent_renter_points += 1
             #  add detail line to statement
-            statement += fmt.format(rental.get_movie().get_title(), rental.get_days_rented(), amount)
+            statement += fmt.format(rental.get_movie().get_title(), rental.get_days_rented(), rental.get_charge())
             # and accumulate activity
-            total_amount += amount
+            total_amount += rental.get_charge()
 
         # footer: summary of charges
         statement += "\n"
@@ -56,8 +54,6 @@ class Customer:
 
         return statement
 
-    def amount_for(self, rental):
-        return rental.get_charge()
 
 if __name__ == "__main__":
     customer = Customer("Edward Snowden")
