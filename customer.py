@@ -1,5 +1,5 @@
 from rental import Rental
-from movie import Movie
+from movie import Movie, PriceCode, MovieCatalog
 
 
 class Customer:
@@ -35,34 +35,37 @@ class Customer:
 
         for rental in self.rentals:
             #  add detail line to statement
-            statement += fmt.format(rental.get_movie().get_title(), rental.get_days_rented(), rental.get_charge())
+            statement += fmt.format(str(rental.get_title()), rental.days_rented, rental.get_charge())
 
         # footer: summary of charges
         statement += "\n"
         statement += "{:32s} {:6s} {:6.2f}\n".format(
-                       "Total Charges", "", self.get_total_charge())
-        statement += "Frequent Renter Points earned: {}\n".format(self.get_total_frequent_renter_points())
+                       "Total Charges", "", self.compute_total_charge())
+        statement += "Frequent Renter Points earned: {}\n".format(self.compute_rental_points())
 
         return statement
 
-    def get_total_charge(self):
+    def compute_total_charge(self):
         total_amount = 0 # total charges
         for rental in self.rentals:
             total_amount += rental.get_charge()
         return total_amount
 
-    def get_total_frequent_renter_points(self):
+    def compute_rental_points(self):
         frequent_renter_points = 0
         for rental in self.rentals:
-            frequent_renter_points += rental.get_frequent_renter_points()
+            frequent_renter_points += rental.get_rental_points()
         return frequent_renter_points
 
 
 if __name__ == "__main__":
+    catalog = MovieCatalog()
     customer = Customer("Edward Snowden")
     print(customer.statement())
-    movie = Movie("Hacker Noon", Movie.REGULAR)
-    customer.add_rental(Rental(movie, 2))
-    movie = Movie("CitizenFour", Movie.NEW_RELEASE)
-    customer.add_rental(Rental(movie, 3))
+    movie = catalog.get_movie("Mulan")
+    price_code = PriceCode.for_movie(movie)
+    customer.add_rental(Rental(movie, 2, price_code))
+    movie = catalog.get_movie("Loki")
+    price_code = PriceCode.for_movie(movie)
+    customer.add_rental(Rental(movie, 3, price_code))
     print(customer.statement())

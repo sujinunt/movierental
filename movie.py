@@ -1,5 +1,50 @@
-import logging
 from enum import Enum
+import pandas as pd
+import datetime
+from typing import List
+
+
+class Movie:
+	"""
+	A movie available for rent.
+	"""
+
+	def __init__(self, title, year, genre: List[str]):
+		# Initialize a new movie.
+		self.title = title
+		self.year = year
+		self.genre = genre
+
+	def get_title(self):
+		return self.title
+
+	def get_year(self):
+		return self.year
+
+	def get_genre(self):
+		return self.genre
+
+	def is_genre(self, genre):
+		for movie_genre in self.genre:
+			if(genre==movie_genre):
+				return True
+		return False
+
+	def __str__(self):
+		return self.title
+
+
+class MovieCatalog:
+	"""A Movie Catalog of movie that can be rent"""
+
+	def get_movie(self, title: str):
+		"""Get movie from csv."""
+		data = pd.read_csv("movies.csv")
+		movie_query = data.query(f'`title` == "{title}"')
+		movie_title = str(movie_query.iloc[0]['title'])
+		movie_year = str(movie_query.iloc[0]['year'])
+		movie_genre = str(movie_query.iloc[0]['genres']).split('|')
+		return Movie(movie_title, movie_year, movie_genre)
 
 
 class PriceCode(Enum):
@@ -38,33 +83,12 @@ class PriceCode(Enum):
 		else:
 			return 1
 
-
-class Movie:
-	"""
-	A movie available for rent.
-	"""
-
-	def __init__(self, title, price_code: PriceCode):
-		# Initialize a new movie.
-		if not isinstance(price_code, PriceCode):
-			log = logging.getLogger()
-			log.error(f"Movie {self.get_title()} has unrecognized priceCode {self.get_price_code()}")
-
-		self.title = title
-		self.price_code = price_code
-
-	def get_price_code(self):
-		# get the price code
-		return self.price_code
-
-	def get_title(self):
-		return self.title
-
-	def __str__(self):
-		return self.title
-
-	def get_charge(self, days_rented):
-		return self.get_price_code().price(days_rented)
-
-	def get_frequent_renter_points(self, days_rented):
-		return self.get_price_code().frequent_renter_points(days_rented)
+	def for_movie(movies: Movie):
+		"""Price code for movie."""
+		year = datetime.date.today().year
+		if(movies.get_year()==str(year)):
+			return PriceCode.new_release
+		elif('Children' in movies.get_genre()):
+			return PriceCode.childrens
+		else:
+			return PriceCode.normal
